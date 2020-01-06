@@ -48,19 +48,19 @@ db.on(`error`, (error) => {
 
 
 // Other settings
-app.set(`view engine`, `ejs`);
+app.set("view engine", "ejs");
 // express에서 기본 경로. 별다른 변경이 없을 경우 명시하지 않아도 됨
 // app.set('views', __dirname + '/views');
-app.use(express.static(__dirname + `/public`));
-app.engine('html', require('ejs').renderFile);
+app.use(express.static(__dirname+"/public"));
+// app.engine('html', require('ejs').renderFile);
 
 /*
 * bodyParser로 stream의 form data를 req.body에 옮겨 담습니다.
 * 2번은 json data를, 3번은 urlencoded data를 분석해서 req.body를 생성합니다.
 * 이 부분이 지금 이해가 안가시면 bodyParser로 이렇게 처리를 해 줘야 form에 입력한 data가 req.body에 object로 생성이 된다는 것만 아셔도 괜찮습니다.
 */
-app.use(bodyParser.json()); // 2
-app.use(bodyParser.urlencoded({ extended: true })); // 3
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
 
 /**
  * _method의 query로 들어오는 값으로 HTTP method를 바꿉니다.
@@ -74,7 +74,7 @@ app.use("/", require("./routes/home"));
 // app.use("/contacts", require("./routes/contacts"));
 
 // Port setting
-var port = 3000;
-app.listen(port, () => {
-  console.log(`Server On! http://127.0.0.1:`+port);
+var port = 3000
+app.listen(port, function(){
+  console.log("server on! http://localhost:"+port);
 });
