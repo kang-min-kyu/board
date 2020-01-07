@@ -6,9 +6,10 @@ let postSchema = mongoose.Schema({
   , body: { type: String}
   , createdAt: { type: Date, default: Date.now }
   , updatedAt: { type: Date }
+  ,
 },{
   // virtual들을 object에서 보여주는 mongoose schema의 option
-  toBoejct: { virtuals: true}
+  toObject: { virtuals: true }
 });
 
 // virtuals

@@ -12,7 +12,7 @@ let Post = require(`../models/Post`);
  * 두가지 이상으로 정렬하는 경우 빈칸을 넣고 각각의 항목을 적어주면 됨
  */
 router.get(`/`, (req, res) => {
-  Post.find({});
+  Post.find({})
   .sort(`-createdAt`)
   .exec((err, posts) => {
     if (err) return res.json(err);
@@ -66,4 +66,4 @@ router.delete(`/:id`, (req, res) => {
   });
 });
 
-module.export = reuter;
+module.exports = router;
