@@ -88,7 +88,6 @@ userSchema.path(`password`).validate(function(v){
 // hash password
 userSchema.pre(`save`, function(next){
   let user = this;
-  console.log(`user:`, user);
   if (!user.isModified(`password`)) {
     return next();
   } else {
