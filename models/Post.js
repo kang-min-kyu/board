@@ -23,25 +23,32 @@ let postSchema = mongoose.Schema({
  * 이해불가 ㅠ.ㅠ
  */
 postSchema.virtual("createdDate")
-.get(() => {
+.get(function(){
   return getDate(this.createdAt);
 });
 
 postSchema.virtual("createdTime")
-.get(() => {
+.get(function(){
   return getTime(this.createdAt);
 });
 
 postSchema.virtual("updatedDate")
-.get(() => {
+.get(function(){
   return getDate(this.updatedAt);
 });
 
 postSchema.virtual("updatedTime")
-.get(() => {
+.get(function(){
   return getTime(this.updatedAt);
 });
 
+/*
+* mongoose.model함수를 사용하여 contact schema의 model을 생성
+* 첫번째 parameter는 mongoDB에서 사용되는 콜렉션의 이름(테이블명(?))이며, 두번째는 mongoose.Schema로 생성된 오브젝트
+* DB에 있는 post 데이터 콜렉션을 현재 코드의 Post 변수에 연결해 주는 역할
+* 생성된 Post object는 mongoDB의 post collection의 model이며 DB에 접근하여 data를 변경할 수 있는 함수들을 가지고 있음
+* DB에 post 콜렉션이 존재하지 않더라도 괜찮, 없는 콜렉션은 알아서 생성
+*/
 // model & export
 let Post = mongoose.model(`post`, postSchema);
 module.exports = Post;
@@ -55,7 +62,7 @@ function getDate(dateObj){
 
 function getTime(dateObj){
   if (dateObj instanceof Date) {
-    return get2digits(dateobj.getHours()) + `:` + get2digits(dateObj.getMinutes()) + `:` + get2digits(dateObj.getSeconds());
+    return get2digits(dateObj.getHours()) + `:` + get2digits(dateObj.getMinutes()) + `:` + get2digits(dateObj.getSeconds());
   }
 }
 

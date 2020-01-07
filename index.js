@@ -72,6 +72,7 @@ app.use(methodOverride("_method"));
 /* app.use("route", 콜백_함수)는 해당 route에 요청이 오는 경우에만 콜백 함수를 호출 */
 app.use("/", require("./routes/home"));
 app.use("/posts", require("./routes/posts"));
+app.use("/users", require("./routes/users"));
 
 // Port setting
 var port = 3000
