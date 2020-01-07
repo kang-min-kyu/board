@@ -1,4 +1,5 @@
 let mongoose = require(`mongoose`);
+let bcrypt = require(`bcrypt-nodejs`);
 
 /**
  * * schema : require 에 true 대신 배열
@@ -60,12 +61,16 @@ userSchema.path(`password`).validate(function(v){
     }
   }
 
+  /**
+   * bcrypt.compareSync(first, second)에서 first는 입력받은 text값이고 second는 hash값
+   * hash를 해독해서 text를 비교하는것이 아니라 text값을 hash로 만들고 그 값이 일치하는 지를 확인하는 과정
+   */
   // update user
   if (!user.isNew) {
     if (!user.currentPassword) {
       user.invalidate(`currentPassword`, 'Current Password is required!');
     }
-    if (user.currentPassword && user.currentPassword != user.originalPassword) {
+    if (user.currentPassword && !bcrypt.compareSync(user.currentPassword, user.originalPassword)) {
       user.invalidate(`currentPassword`, 'Current Password is invalid!');
     }
     if (user.newPassword !== user.passwordConfirmation) {
@@ -73,6 +78,30 @@ userSchema.path(`password`).validate(function(v){
     }
   }
 });
+
+/**
+ * * userSchema.pre(`first`, () => {});
+ * 첫번째 파라미터로 설정된 event(`first`)가 일어나기 전(pre)에 먼저 callback 함수를 실행
+ * isModified함수는 해당 값이 db에 기록된 값과 비교해서 변경된 경우 true를, 그렇지 않은 경우 false를 return하는 함수
+ * 생성시는 항상 true, 수정시는 password가 변경되는 경우에만 true를 리턴
+ */
+// hash password
+userSchema.pre(`save`, function(next){
+  let user = this;
+  console.log(`user:`, user);
+  if (!user.isModified(`password`)) {
+    return next();
+  } else {
+    user.password = bcrypt.hashSync(user.password);
+    return next();
+  }
+});
+
+// model methods
+userSchema.methods.authenticate = (password) => {
+  let user = this;
+  return bcypt.compareSync(password, user.password);
+};
 
 /*
 * mongoose.model함수를 사용하여 contact schema의 model을 생성
