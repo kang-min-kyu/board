@@ -26,15 +26,26 @@ router.get(`/`, (req, res) => {
   });
 });
 
+/**
+ * flash는 array가 오게 되는데
+ * 이 프로그램에서는 하나 이상의 값이 저장되는 경우가 없고, 있더라도 오류이므로 무조건 [0]의 값을 읽어 오게 했음
+ */
 // new
 router.get(`/new`, (req, res) => {
-  res.render(`users/new`, {});
+  let user = req.flash(`user`)[0] || {};
+  let errors = req.flash(`errors`)[0] || {};
+  res.render(`users/new`, { user: user, errors: errors });
 });
 
 // create
 router.post(`/`, (req, res) => {
   User.create(req.body, (err, user) => {
-    if (err) return res.json(err);
+    console.log(`User.create`);
+    if (err) {
+      req.flash(`user`, req.body);
+      req.flash(`errors`, parseError(err));
+      return res.redirect(`/users/new`);
+    }
     res.redirect(`/users`);
   });
 });
@@ -49,10 +60,15 @@ router.get(`/:username`, (req, res) => {
 
 // edit
 router.get(`/:username/edit`, (req, res) => {
-  User.findOne({ username: req.params.username }, (err, user) => {
-    if (err) return res.json(err);
-    res.render(`users/edit`, { user: user });
-  });
+  let user = req.flash(`user`)[0];
+  let errors = req.flash(`errors`)[0] || {};
+  if (!user) {
+    User.findOne({ username: req.params.username }, (err, user) => {
+      if (err) return res.json(err);
+    });
+  }
+
+  res.render(`users/edit`, { username: req.params.username, user: user, errors: errors });
 });
 
 /**
@@ -64,6 +80,8 @@ router.get(`/:username/edit`, (req, res) => {
  * 기본적으로 읽어오게 되어 있는 항목을 안 읽어오게 할 수도 있는데 이때는 항목이름 앞에 -를 붙이면 됨
  * 하나의 select함수로 여러 항목을 동시에 정할 수도 있음
  * password를 읽어오고, name을 안 읽어오게 하고 싶다면 .select("password -name")를 입력
+ * select("password"), select({password: 1}) : password 항목을 가져옴
+ * select("-password"), select({password: 0}) : password 항목을 숨김
  */
 // update
 router.put(`/:username`, (req, res, next) => {
@@ -81,10 +99,32 @@ router.put(`/:username`, (req, res, next) => {
 
     // user는 DB에서 읽어온 data이고, req.body가 실제 form으로 입력된 값이므로 각 항목을 덮어 쓰는 부분
     user.save((err, user) => {
-      if (err) return res.json(err);
+      if (err) {
+        req.flash(`user`, req.body);
+        req.flash(`errors`, parseError(err));
+        return res.redirect(`/users/`+req.params.username+`/edit`);
+      }
       res.redirect(`/users/`+user.username);
     });
   });
 });
 
 module.exports = router;
+
+// Functions
+let parseError = function(errors){
+  // console.log(`1errors: `, errors);
+  let parsed = {};
+  if (errors.name == `ValidationError`) {
+    for (var name in errors.errors) {
+      let validationError = errors.errors[name];
+      parsed[name] = { message: validationError.message };
+    }
+  } else if (errors.code == `11000` && errors.errmsg.indexOf(`username`) > 0) {
+    parsed.username = { message: `This username already exists!` };
+  } else {
+    parsed.unhandled = JSON.stringify(errors);
+  }
+  // console.log(`parsed:`, parsed);
+  return parsed;
+}

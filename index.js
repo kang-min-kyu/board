@@ -2,6 +2,8 @@ var express = require(`express`);
 var mongoose = require(`mongoose`);
 var bodyParser = require(`body-parser`);
 var methodOverride = require(`method-override`);
+var flash = require("connect-flash");
+var session = require("express-session");
 var app = express();
 
 // DB setting
@@ -67,6 +69,18 @@ app.use(bodyParser.urlencoded({extended:true}));
  * 예를들어 http://example.com/category/id?_method=delete를 받으면 _method의 값인 delete을 읽어 해당 request의 HTTP method를 delete으로 바꿉니다.
  */
 app.use(methodOverride("_method"));
+
+/**
+ * flash는 변수처럼 이름을 정하고 값(문자열, 숫자, 배열, 객체 등등 어떠한 형태의 값이라도 사용 가능)을 저장할 수 있는데,
+ * 한번 생성 되면 사용될 때까지 서버에 저장이 되어 있다가 한번 사용되면 사라지는 형태의 data
+ *
+ * flash를 초기화 이제부터 req.flash라는 함수를 사용할 수 있음
+ * req.flash(key, value) 의 형태로 value(숫자, 문자열, 오브젝트등 어떠한 값이라도 가능)를 해당 key에 저장
+ * flash는 배열로 저장되기 때문에 같은 key를 중복해서 사용하면 순서대로 배열로 저장
+ * req.flash(key) 인 경우 해당 key에 저장된 value들을 배열로 불러옴. 저장된 값이 없다면 빈 배열([])을 return
+ */
+app.use(flash());
+app.use(session({ secret: "MySecret", resave: true, saveUninitialized: true} ));
 
 // Routes
 /* app.use("route", 콜백_함수)는 해당 route에 요청이 오는 경우에만 콜백 함수를 호출 */
