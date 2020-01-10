@@ -4,6 +4,7 @@ var bodyParser = require(`body-parser`);
 var methodOverride = require(`method-override`);
 var flash = require("connect-flash");
 var session = require("express-session");
+var passport = require("./config/passport");
 var app = express();
 
 // DB setting
@@ -81,6 +82,37 @@ app.use(methodOverride("_method"));
  */
 app.use(flash());
 app.use(session({ secret: "MySecret", resave: true, saveUninitialized: true} ));
+
+/**
+ * passport.initialize()는 passport를 초기화 시켜주는 함수
+ * passport.session()는 passport를 session과 연결해 주는 함수
+ * @type {Boolean}
+ */
+// Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+/**
+ * * 로그인시에 DB로 부터 user를 찾아 session에 user 정보의 일부(간혹 전부)를 등록하는 것을 serialize라고 함
+ * 반대로 session에 등록된 user 정보로부터 해당 user를 object로 만드는 과정을 deserialize라고 함
+ * server에 요청이 올때마다 deserialize를 거치게 됨
+ *
+ * * app.use에 함수를 넣은 것을 middleware라고 함
+ * app.use에 있는 함수는 request가 올때마다 route에 상관없이 무조건 해당 함수가 실행
+ * app.use는 위에 있는 것 부터 순서대로 실행되기 때문에 위치가 중요
+ * route과도 마찬가지로 반드시 route 위에 위치해야 함 (무슨 말인지 모르겠음. 2020-01-09)
+ *
+ * * 함수안에 반드시 next()를 넣어줘야 다음으로 진행
+ * req.isAuthenticated()는 passport에서 제공하는 함수로, 현재 로그인이 되어있는지 아닌지를 true,false로 return
+ * req.user는 passport에서 추가하는 항목으로 로그인이 되면 session으로 부터 user를 deserialize하여 생성
+ * res.locals에 담겨진 변수는 ejs에서 바로 사용가능
+ */
+// Custom Middlewares
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.isAuthenticated();
+  res.locals.currentUser = req.user;
+  next();
+})
 
 // Routes
 /* app.use("route", 콜백_함수)는 해당 route에 요청이 오는 경우에만 콜백 함수를 호출 */

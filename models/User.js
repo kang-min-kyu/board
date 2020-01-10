@@ -136,9 +136,9 @@ userSchema.pre(`save`, function(next){
 });
 
 // model methods
-userSchema.methods.authenticate = (password) => {
+userSchema.methods.authenticate = function(password){
   let user = this;
-  return bcypt.compareSync(password, user.password);
+  return bcrypt.compareSync(password, user.password);
 };
 
 /*
