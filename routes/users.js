@@ -72,6 +72,10 @@ router.get(`/:username/edit`, (req, res) => {
   // } else {
   //   res.render(`users/edit`, { username: req.params.username, user: user, errors: errors });
   // }
+  /**
+   * mongoose promise
+   * /index.js mongoose connect 전 mongoose.Promise = global.Promise; 설정 필요
+   */
   if (!user) {
     User.findOne({ username: req.params.username })
     .then((result) => {
