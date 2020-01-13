@@ -1,6 +1,7 @@
 let express = require(`express`);
 let router = express.Router();
 let Post = require(`../models/Post`);
+let util = require(`../util`);
 
 // index
 /**
@@ -22,13 +23,20 @@ router.get(`/`, (req, res) => {
 
 // new
 router.get(`/new`, (req, res) => {
-  res.render(`posts/new`);
+  let post = req.flash(`post`)[0] || {};
+  let errors = req.flash('errors')[0] || {};
+  console.log(` > /posts/new, post:`, post, ', errors:', errors);
+  res.render(`posts/new`, { post: post, errors: errors });
 });
 
 // create
 router.post(`/`, (req, res) => {
   Post.create(req.body, (err, post) => {
-    if (err) return res.json(err);
+    if (err) {
+      req.flash(`post`, req.body);
+      req.flash(`errors`, util.parseError(err));
+      return res.redirect(`/posts/new`);
+    }
     res.redirect(`/posts`);
   });
 });
@@ -43,17 +51,33 @@ router.get(`/:id`, (req, res) => {
 
 // edit
 router.get(`/:id/edit`, (req, res) => {
-  Post.findOne({ _id: req.params.id }, (err, post) => {
-    if (err) return res.json(err);
-    res.render(`posts/edit`, { post: post });
-  });
+  let post = req.flash(`post`)[0];
+  let errors = req.flash(`errors`)[0] || {};
+
+  if (!post) {
+    Post.findOne({ _id: req.params.id }, (err, post) => {
+      if (err) return res.json(err);
+      res.render(`posts/edit`, { post: post });
+    });
+  } else {
+    post._id = req.params.id;
+    res.render(`posts/edit`, { post: post, errors: errors });
+  }
 });
 
+/**
+ * { runValidators: true } : findOneAndUpdate는 기본설정이 schema에 있는 validation을 작동하지 않도록 되어 있음
+ * 이 option을 통해서 validation이 작동하도록 설정
+ */
 // update
 router.put(`/:id`, (req, res) => {
   req.body.updatedAt = Date.now();  // data의 수정이 있는 경우 수정된 날짜를 업데이트
-  Post.findOneAndUpdate({ _id: req.params.id }, req.body, (err, post) => {
-    if (err) return res.json(err);
+  Post.findOneAndUpdate({ _id: req.params.id }, req.body, { runValidators: true }, (err, post) => {
+    if (err) {
+      req.flash(`post`, req.body);
+      req.flash(`errors`, util.parseError(err));
+      return res.redirect(`/posts/`+req.params.id+`/edit`);
+    }
     res.redirect(`/posts/`+req.params.id);
   });
 });

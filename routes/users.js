@@ -1,6 +1,7 @@
 let express = require(`express`);
 let router = express.Router();
 let User = require(`../models/User`);
+let util = require(`../util`);
 
 /**
  * method 원형 : User.find({}).exec(function(err, posts){ ... })
@@ -43,7 +44,7 @@ router.post(`/`, (req, res) => {
     console.log(`User.create`);
     if (err) {
       req.flash(`user`, req.body);
-      req.flash(`errors`, parseError(err));
+      req.flash(`errors`, util.parseError(err));
       return res.redirect(`/users/new`);
     }
     res.redirect(`/users`);
@@ -62,13 +63,26 @@ router.get(`/:username`, (req, res) => {
 router.get(`/:username/edit`, (req, res) => {
   let user = req.flash(`user`)[0];
   let errors = req.flash(`errors`)[0] || {};
-  if (!user) {
-    User.findOne({ username: req.params.username }, (err, user) => {
-      if (err) return res.json(err);
-    });
-  }
 
-  res.render(`users/edit`, { username: req.params.username, user: user, errors: errors });
+  // if (!user) {
+  //   User.findOne({ username: req.params.username }, (err, user) => {
+  //     if (err) return res.json(err);
+  //     res.render(`users/edit`, { username: req.params.username, user: user, errors: errors });
+  //   });
+  // } else {
+  //   res.render(`users/edit`, { username: req.params.username, user: user, errors: errors });
+  // }
+  if (!user) {
+    User.findOne({ username: req.params.username })
+    .then((result) => {
+      console.log(`result:`, result);
+      if (!result) return res.json('결과 없음');
+      res.render(`users/edit`, { username: req.params.username, user: result, errors: errors });
+    })
+    .catch((err) => { res.json(err); });
+  } else {
+    res.render(`users/edit`, { username: req.params.username, user: user, errors: errors });
+  }
 });
 
 /**
@@ -101,7 +115,7 @@ router.put(`/:username`, (req, res, next) => {
     user.save((err, user) => {
       if (err) {
         req.flash(`user`, req.body);
-        req.flash(`errors`, parseError(err));
+        req.flash(`errors`, util.parseError(err));
         return res.redirect(`/users/`+req.params.username+`/edit`);
       }
       res.redirect(`/users/`+user.username);
@@ -110,21 +124,3 @@ router.put(`/:username`, (req, res, next) => {
 });
 
 module.exports = router;
-
-// Functions
-let parseError = function(errors){
-  // console.log(`1errors: `, errors);
-  let parsed = {};
-  if (errors.name == `ValidationError`) {
-    for (var name in errors.errors) {
-      let validationError = errors.errors[name];
-      parsed[name] = { message: validationError.message };
-    }
-  } else if (errors.code == `11000` && errors.errmsg.indexOf(`username`) > 0) {
-    parsed.username = { message: `This username already exists!` };
-  } else {
-    parsed.unhandled = JSON.stringify(errors);
-  }
-  // console.log(`parsed:`, parsed);
-  return parsed;
-}

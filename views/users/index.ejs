@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <%- include('../partials/head', {}) %>
-</head>
-<body>
-  <%- include('../partials/nav', {}) %>
+  <head>
+    <%- include('../partials/head') %>
+  </head>
+  <body>
+    <%- include('../partials/nav') %>
 
-  <div class="container user user-index">
+    <div class="container mb-3">
 
-  <div class="contentBox">
-    <h3 class="contentBoxTop">Users</h3>
-    <ul class="floats">
-      <% if(users == null || users.length == 0){ %>
-      <div class="noData" colspan=100> There is no user yet.</div>
-      <% } %>
-      <% users.forEach(function(user) { %>
-      <li>
-        <a href="/users/<%= user.username %>"><%= user.username %></a>
-      </li>
-      <% }) %>
-    </ul>
-  </div>
+      <h3 class="mb-3">Users</h3>
 
-  </div> <!-- container end -->
-</body>
+      <ul class="list-group">
+        <% if(users == null || users.length == 0){ %>
+          <li class="list-group-item"> There is no user yet.</div>
+        <% } %>
+        <% users.forEach(function(user) { %>
+          <li class="list-group-item">
+            <a href="/users/<%= user.username %>"><%= user.username %></a>
+          </li>
+        <% }) %>
+      </ul>
+
+    </div>
+  </body>
 </html>

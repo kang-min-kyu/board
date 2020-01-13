@@ -23,6 +23,7 @@ mongoose.set(`useUnifiedTopology`, true);
 * mongoose.connect("CONNECTION_STRING")함수를 사용해서 DB를 연결할 수 있음
 * ex) mongoose.connect("mongodb+srv://root:kang3593@cluster0-chyyt.mongodb.net/test?retryWrites=true&w=majority")
 */
+mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGO_DB);
 
 /*
@@ -121,7 +122,7 @@ app.use("/posts", require("./routes/posts"));
 app.use("/users", require("./routes/users"));
 
 // Port setting
-var port = 3000
+var port = 4000
 app.listen(port, function(){
   console.log("server on! http://localhost:"+port);
 });

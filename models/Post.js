@@ -1,15 +1,16 @@
 let mongoose = require(`mongoose`);
+// let util = require(`../util`);
 
 // schema
 let postSchema = mongoose.Schema({
-  title: { type: String, required: true }
-  , body: { type: String}
+  title: { type: String, required: [true, `Title is required!`] }
+  , body: { type: String, required: [true, `Body is required!`] }
   , createdAt: { type: Date, default: Date.now }
   , updatedAt: { type: Date }
-  ,
-},{
-  // virtual들을 object에서 보여주는 mongoose schema의 option
-  toObject: { virtuals: true }
+//   ,
+// },{
+//   // virtual들을 object에서 보여주는 mongoose schema의 option
+//   toObject: { virtuals: true }
 });
 
 // virtuals
@@ -22,25 +23,25 @@ let postSchema = mongoose.Schema({
  * 따로 설정해 주어야 하기 때문에 이와 같은 방식을 택했다
  * 이해불가 ㅠ.ㅠ
  */
-postSchema.virtual("createdDate")
-.get(function(){
-  return getDate(this.createdAt);
-});
-
-postSchema.virtual("createdTime")
-.get(function(){
-  return getTime(this.createdAt);
-});
-
-postSchema.virtual("updatedDate")
-.get(function(){
-  return getDate(this.updatedAt);
-});
-
-postSchema.virtual("updatedTime")
-.get(function(){
-  return getTime(this.updatedAt);
-});
+// postSchema.virtual("createdDate")
+// .get(function(){
+//   return util.getDate(this.createdAt);
+// });
+//
+// postSchema.virtual("createdTime")
+// .get(function(){
+//   return util.getTime(this.createdAt);
+// });
+//
+// postSchema.virtual("updatedDate")
+// .get(function(){
+//   return util.getDate(this.updatedAt);
+// });
+//
+// postSchema.virtual("updatedTime")
+// .get(function(){
+//   return util.getTime(this.updatedAt);
+// });
 
 /*
 * mongoose.model함수를 사용하여 contact schema의 model을 생성
@@ -52,20 +53,3 @@ postSchema.virtual("updatedTime")
 // model & export
 let Post = mongoose.model(`post`, postSchema);
 module.exports = Post;
-
-// functions
-function getDate(dateObj){
-  if (dateObj instanceof Date) {
-    return dateObj.getFullYear() + `-` + get2digits(dateObj.getMonth() + 1) + `-` + get2digits(dateObj.getDate());
-  }
-}
-
-function getTime(dateObj){
-  if (dateObj instanceof Date) {
-    return get2digits(dateObj.getHours()) + `:` + get2digits(dateObj.getMinutes()) + `:` + get2digits(dateObj.getSeconds());
-  }
-}
-
-function get2digits(num){
-  return (`0` + num).slice(-2);
-}
